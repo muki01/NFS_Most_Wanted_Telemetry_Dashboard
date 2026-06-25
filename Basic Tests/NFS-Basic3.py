@@ -1,0 +1,79 @@
+import pymem
+import pymem.process
+import time
+import os
+import keyboard
+import sys
+from colorama import init, Fore, Style
+
+# Renkleri başlat
+init(autoreset=True)
+
+# Ayarlar
+PROCESS_NAME = "speed.exe"
+NOS_BASE_OFFSET = 0x50D670
+NOS_OFFSETS = [0x68, 0x4, 0x8, 0x10, 0xF8]
+SPEED_STATIC_OFFSET = 0x514654
+
+def get_pointer_address(pm, base, offsets):
+    try:
+        addr = pm.read_int(base)
+        for offset in offsets[:-1]:
+            addr = pm.read_int(addr + offset)
+        return addr + offsets[-1]
+    except:
+        return None
+
+def clear_line():
+    """Mevcut satırı tamamen temizler."""
+    sys.stdout.write("\r" + " " * 80 + "\r")
+    sys.stdout.flush()
+
+def main():
+    try:
+        pm = pymem.Pymem(PROCESS_NAME)
+        game_module = pymem.process.module_from_name(pm.process_handle, PROCESS_NAME).lpBaseOfDll
+        static_addr = game_module + NOS_BASE_OFFSET
+        
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(Fore.CYAN + Style.BRIGHT + "="*50)
+        print(Fore.YELLOW + "  NFS:MW Gelişmiş NOS Arayüzü")
+        print(Fore.WHITE + "  [Q] Çıkış | Otomatik Doldurma Aktif")
+        print(Fore.CYAN + Style.BRIGHT + "="*50 + "\n")
+
+        while True:
+            if keyboard.is_pressed('q'): break
+
+            try:
+                final_addr = get_pointer_address(pm, static_addr, NOS_OFFSETS)
+                if final_addr:
+                    nos_val = pm.read_float(final_addr)
+                    nos_perc = max(0.0, min(1.0, nos_val))
+                    
+                    # Bar tasarımı
+                    bar = "█" * int(20 * nos_perc) + "░" * (20 - int(20 * nos_perc))
+                    color = Fore.GREEN if nos_perc > 0.2 else Fore.RED
+                    
+                    # TEK SATIR GÜNCELLEME
+                    # \r imleci başa alır, end="" satır atlamayı engeller
+                    print(f"\r{Fore.WHITE}DURUM: [{color}{bar}{Fore.WHITE}] %{nos_perc*100:>5.1f}", end="", flush=True)
+
+                    # NOS Doldurma Mantığı
+                    if nos_perc < 0.05 or keyboard.is_pressed('0'):
+                        pm.write_float(final_addr, 1.0)
+                        
+                        # Mesajı aynı satırda anlık gösterip geri dönme:
+                        print(f"  {Fore.CYAN}<< TAKVİYE YAPILDI! >>", end="", flush=True)
+                        time.sleep(0.7) # Mesajın okunması için kısa bekleme
+                        clear_line() # Satırı temizle ki eski bar kalmasın
+                
+            except Exception:
+                print(f"\r{Fore.RED}[!] Yarış bekleniyor...                      ", end="")
+            
+            time.sleep(0.01)
+
+    except Exception as e:
+        print(f"\n{Fore.RED}Hata: {e}")
+
+if __name__ == "__main__":
+    main()
