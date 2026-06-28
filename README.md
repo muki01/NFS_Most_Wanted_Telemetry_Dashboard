@@ -39,6 +39,8 @@ The custom dashboard UI will overlay or open next to your game, instantly displa
 
 
 ## 📱 Pictures of the Application
+<img width=70% src="https://github.com/user-attachments/assets/ae1a7ef9-3e96-4fc6-9d11-1a8b6743a4e1" />
+
 
 
 ## 🛠️ Features & Technical Details
