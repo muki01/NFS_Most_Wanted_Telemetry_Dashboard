@@ -41,14 +41,6 @@ The custom dashboard UI will overlay or open next to your game, instantly displa
 ## 📱 Pictures of the Application
 <img width=70% src="https://github.com/user-attachments/assets/ae1a7ef9-3e96-4fc6-9d11-1a8b6743a4e1" />
 
-
-
-## 🛠️ Features & Technical Details
-
-- **Real-Time Memory Scanning:** Efficiently reads running RAM addresses without causing performance drops or lag in the game.
-- **Dynamic Pointer Resolution:** Automatically tracks base addresses and offsets for variables like Speed, RPM, Gear, and Nitro.
-- **Smooth UI Rendering:** Features a custom-coded responsive digital speedometer/gauge cluster that updates as fast as the game logic allows.
-
 ---
 
 ## ☕ Support My Work
