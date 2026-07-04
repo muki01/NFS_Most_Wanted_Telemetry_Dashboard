@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtCore import QTimer, Qt, QRectF, QPointF
 from PyQt5.QtGui import QPainter, QColor, QFont, QPen, QBrush, QRegion, QPainterPath
 
-# --- Bellek Adresleri (Aynı Kaldı) ---
+# --- Memory Addresses (Unchanged) ---
 PROCESS_NAME = "speed.exe"
 SPEED_STATIC_OFFSET = 0x514654
 RPM_STATIC_OFFSET = 0x50D670
@@ -119,15 +119,15 @@ class UltimateRacingDash(QWidget):
         h = self.height()
         scale = min(w / 1000, h / 400)
 
-        # Arka plan çizimi (Kenar yumuşatma eklendi)
+        # Background drawing (Anti-aliasing added)
         painter.setBrush(QColor(12, 14, 18))
         painter.setPen(Qt.NoPen)
         
         if not self.is_fullscreen:
-            # Tam ekran değilken köşeleri yuvarla (25px radyus)
+            # Round corners when not fullscreen (25px radius)
             painter.drawRoundedRect(QRectF(0, 0, w, h), 25 * scale, 25 * scale)
         else:
-            # Tam ekranken düz dikdörtgen
+            # Flat rectangle when fullscreen
             painter.drawRect(self.rect())
 
         radius = 185 * scale
@@ -198,32 +198,32 @@ class UltimateRacingDash(QWidget):
         center_x = w / 2
         center_y = h / 2
 
-        # --- Vites Kutusu (Boyutlar artırıldı) ---
-        gw, gh = 120 * scale, 150 * scale  # Genişlik ve yükseklik büyütüldü
-        # Kutuyu biraz daha yukarı alarak merkeze oturttuk
+        # --- Gear Box (Sizes increased) ---
+        gw, gh = 120 * scale, 150 * scale  # Width and height increased
+        # Shifted slightly upward to center
         gear_rect = QRectF(center_x - (gw/2), center_y - (gh/2) - (20 * scale), gw, gh)
         
-        # Kutu Arka Planı
+        # Box Background
         painter.setBrush(QColor(8, 10, 12))
-        painter.setPen(QPen(QColor(0, 220, 255, 150), 2 * scale)) # Kenarlığa hafif bir renk katıldı
+        painter.setPen(QPen(QColor(0, 220, 255, 150), 2 * scale)) # Border got a subtle color
         painter.drawRoundedRect(gear_rect, 15 * scale, 15 * scale)
 
-        # "GEAR" Yazısı
+        # "GEAR" Label
         painter.setFont(QFont("Segoe UI", int(12 * scale), QFont.Bold))
         painter.setPen(QColor(100, 110, 120))
         painter.drawText(QRectF(center_x - (gw/2), gear_rect.top() + (5 * scale), gw, 30 * scale), Qt.AlignCenter, "GEAR")
 
-        # Vites Sayısı (Büyütüldü ve Ortalandı)
-        painter.setFont(QFont("Segoe UI Black", int(85 * scale))) # Font 75'ten 85'e çıkarıldı
+        # Gear Number (Enlarged and Centered)
+        painter.setFont(QFont("Segoe UI Black", int(85 * scale))) # Font increased from 75 to 85
         gear_color = QColor(255, 50, 50) if self.gear == "R" else QColor(255, 255, 255)
         painter.setPen(gear_color)
         
-        # Sayının tam kutu içinde kalması için alan hesaplaması
-        # gear_rect içinde dikeyde tam ortalamak için offset verildi
+        # Area calculation for number to stay inside the box
+        # Offset added to center vertically within gear_rect
         text_rect = QRectF(gear_rect.left(), gear_rect.top() + (20 * scale), gw, gh - (20 * scale))
         painter.drawText(text_rect, Qt.AlignCenter, str(self.gear))
 
-        # --- Nitro Bölümü ---
+        # --- Nitro Section ---
         nos_y = gear_rect.bottom() + (10 * scale)
         painter.setFont(QFont("Segoe UI", int(10 * scale), QFont.Bold))
         painter.setPen(QColor(150, 160, 170))

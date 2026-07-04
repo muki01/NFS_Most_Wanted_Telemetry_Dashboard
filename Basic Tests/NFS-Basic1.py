@@ -1,88 +1,59 @@
 import pymem
 import pymem.process
 import time
+import os
 import keyboard
 
-# --- AYARLAR ---
-PROCESS_NAME = "tomb123.exe"
-MODULE_NAME = "tomb2.dll" 
+os.system('cls' if os.name == 'nt' else 'clear')
 
-# Hedef Değerler
-HP_VALUE = 1000
-AMMO_VALUE = 950
-MEDKIT_VALUE = 100
-AIR_VALUE = 1800 
-JUMP_FORCE = -150
+PROCESS_NAME = "speed.exe"
+STATIC_PTR_OFFSET = 0x50D670
+OFFSETS = [0x68, 0x4, 0x8, 0x10, 0xF8]
 
-# Ofsetler (Dinamik - Player Base üzerinden)
-PLAYER_BASE = 0x025B23A0
-HP_OFFSET = 0x22
-VELOCITY_OFFSET = 0x20
-Y_COORD_OFFSET = 0x1C
+def get_pointer_address(pm, base, offsets):
+    """Follows the pointer chain to find the actual data address."""
+    addr = pm.read_int(base)
+    for offset in offsets[:-1]:
+        addr = pm.read_int(addr + offset)
+    return addr + offsets[-1]
 
-# Ofsetler (Statik - Modül üzerinden)
-# Yeni eklenen Uzi: 0x2CA550
-AMMO_OFFSETS = [0x2CA578, 0x2CA548, 0x2CA558, 0x2CA550] 
-MEDKIT_OFFSETS = [0x1206D4, 0x1206D8]
-
-# KRİTİK: Senin what writes çıktın A416'ya (A414+2) yazıyordu.
-# Eğer hala azalırsa bu ofseti 0x2CA414 yaparak dene.
-AIR_OFFSET = 0x2CA416 
-
-def tomb_raider_ultimate_cheat():
-    last_height = None
+def main():
     try:
         pm = pymem.Pymem(PROCESS_NAME)
-        module = pymem.process.module_from_name(pm.process_handle, MODULE_NAME).lpBaseOfDll
+        game_module = pymem.process.module_from_name(pm.process_handle, PROCESS_NAME).lpBaseOfDll
+        static_addr = game_module + STATIC_PTR_OFFSET
         
-        print(f"--- Tomb Raider II: Ultimate Cheat Seti Aktif ---")
-        print(f"[+] Silahlar: Shotgun, Uzi, Pistols ve fazlası kilitli.")
-        print(f"[+] Envanter: Büyük/Küçük Medkitler kilitli.")
-        print(f"[+] Nefes: Sınırsız (Adres: {hex(module + AIR_OFFSET)})")
-        print(f"[+] Hareket: X = Yüksel, Z = Havada Sabitle")
-        print(f"--------------------------------------------------")
+        print(" Press '0' to fill NOS. (Press 'q' to exit)")
 
         while True:
             try:
-                # 1. NEFES SABİTLEME (2-Byte / Short)
-                pm.write_short(module + AIR_OFFSET, AIR_VALUE)
+                final_addr = get_pointer_address(pm, static_addr, OFFSETS) # Dynamic NOS calculation
+                nos_val = pm.read_float(final_addr) # Real NOS value (0.0 to 1.0)
+                nos_percentage = max(0.0, min(1.0, nos_val)) * 100 # Calculate percentage and clamp between 0-100
 
-                # 2. OYUNCU İŞLEMLERİ
-                p_ptr = pm.read_longlong(module + PLAYER_BASE)
-                if p_ptr > 0:
-                    # Can Sabitle
-                    pm.write_short(p_ptr + HP_OFFSET, HP_VALUE)
+                print(f"Current NOS: %{nos_percentage:.1f}      ", end="\r")
 
-                    # X Tuşu - Yükselme
-                    if keyboard.is_pressed('x'):
-                        pm.write_short(p_ptr + VELOCITY_OFFSET, JUMP_FORCE)
-                        last_height = None 
+                # If '0' is pressed, set NOS to 100% (write 1.0)
+                if keyboard.is_pressed('0'):
+                    pm.write_float(final_addr, 1.0)
+                    print("\n[!] NOS Refilled!          ")
 
-                    # Z Tuşu - Havada Sabitleme
-                    if keyboard.is_pressed('z'):
-                        if last_height is None:
-                            last_height = pm.read_int(p_ptr + Y_COORD_OFFSET)
-                        pm.write_int(p_ptr + Y_COORD_OFFSET, last_height)
-                        pm.write_short(p_ptr + VELOCITY_OFFSET, 0)
-                    else:
-                        last_height = None
+                if nos_percentage <= 5.0:
+                    pm.write_float(final_addr, 1.0)
+                    print("\n[!] NOS Refilled!          ")
 
-                # 3. MERMİLER (4-Byte / Int)
-                for ammo in AMMO_OFFSETS:
-                    pm.write_int(module + ammo, AMMO_VALUE)
-
-                # 4. MEDKİTLER (2-Byte / Short)
-                for med in MEDKIT_OFFSETS:
-                    pm.write_short(module + med, MEDKIT_VALUE)
-
-                # Döngü hızı
-                time.sleep(0.01) 
+                # Exit with 'q'
+                if keyboard.is_pressed('q'):
+                    break
 
             except Exception:
-                continue
+                print("Error reading data!", end="\r")
+            
+            time.sleep(0.1)
 
     except Exception as e:
-        print(f"[-] Hata: {e}")
+        print(f"Error: {e}")
+        print("Please make sure the game is running and you are running as administrator.")
 
 if __name__ == "__main__":
-    tomb_raider_ultimate_cheat()
+    main()

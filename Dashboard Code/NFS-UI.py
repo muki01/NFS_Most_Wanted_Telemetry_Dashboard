@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtCore import QTimer, Qt, QRectF, QPointF
 from PyQt5.QtGui import QPainter, QColor, QFont, QPen, QBrush
 
-# UI Sınıfını içe aktar
+# Import UI class
 from ui_nfs import Ui_UltimateRacingDash
 
 # --- Bellek Adresleri ---
@@ -24,29 +24,29 @@ class UltimateRacingDash(QWidget):
     def __init__(self):
         super().__init__()
         
-        # UI Kurulumu (QtDesigner tarzı)
+        # UI Setup (QtDesigner style)
         self.ui = Ui_UltimateRacingDash()
         self.ui.setupUi(self)
         
-        # Değişkenler
+        # Variables
         self.pm = None
         self.game_module = None
         self.speed = 0.0
         self.rpm = 0.0
         self.gear = "N"
         self.nos = 1.0
-        self.nitro_hack_enabled = False # Yeni: Nitro hilesi durumu
+        self.nitro_hack_enabled = False # Nitro hack state
         
         self.drag_pos = None 
         self.is_fullscreen = False
         
-        # Buton Bağlantıları
+        # Button Connections
         self.ui.closeBtn.clicked.connect(self.close)
         self.ui.nitroBtn.clicked.connect(self.toggle_nitro_hack)
 
         self.connect_game()
         
-        # Güncelleme Zamanlayıcısı
+        # Update Timer
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_all)
         self.timer.start(16) 
@@ -54,18 +54,18 @@ class UltimateRacingDash(QWidget):
     def toggle_nitro_hack(self):
         self.nitro_hack_enabled = not self.nitro_hack_enabled
         self.ui.updateStyles(self.nitro_hack_enabled)
-        # Eğer aktifse hemen full yap
+        # If active, set to full immediately
         if self.nitro_hack_enabled:
             self.nos = 1.0
 
-    # Pencere boyutu değiştikçe butonları yerleştir
+    # Reposition buttons as window resizes
     def resizeEvent(self, event):
         w, h = self.width(), self.height()
         scale = min(w / 1000, h / 400)
         self.ui.repositionWidgets(w, h, scale)
         super().resizeEvent(event)
 
-    # --- Olay İşleyiciler (Event Handlers) ---
+    # --- Event Handlers ---
     def mouseDoubleClickEvent(self, event):
         if self.is_fullscreen:
             self.showNormal()
@@ -87,7 +87,7 @@ class UltimateRacingDash(QWidget):
     def mouseReleaseEvent(self, event):
         self.drag_pos = None
 
-    # --- Oyun Mantığı (Game Logic) ---
+    # --- Game Logic ---
     def connect_game(self):
         try:
             self.pm = pymem.Pymem(PROCESS_NAME)
@@ -112,7 +112,7 @@ class UltimateRacingDash(QWidget):
             return
             
         try:
-            # Hız Okuma
+            # Speed Reading
             raw_speed = self.pm.read_float(self.game_module + SPEED_STATIC_OFFSET)
             self.speed += (abs(raw_speed * 1.609) - self.speed) * 0.15
             
@@ -141,7 +141,7 @@ class UltimateRacingDash(QWidget):
         except: 
             self.pm = None
 
-    # --- Çizim Mantığı (UI Rendering) ---
+    # --- UI Rendering ---
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -158,7 +158,7 @@ class UltimateRacingDash(QWidget):
         else:
             painter.drawRect(self.rect())
 
-        # UI Çizimi (ui_nfs.py'den gelen metodlar)
+        # UI Drawing (methods from ui_nfs.py)
         radius = 185 * scale
         rpm_center = QPointF(w * 0.22, h * 0.5) 
         speed_center = QPointF(w * 0.78, h * 0.5)

@@ -11,18 +11,18 @@ class Ui_UltimateRacingDash(object):
         UltimateRacingDash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         UltimateRacingDash.setAttribute(Qt.WA_TranslucentBackground)
         
-        # --- Kapatma Butonu ---
+        # --- Close Button ---
         self.closeBtn = QPushButton("✕", UltimateRacingDash)
         self.closeBtn.setObjectName("closeBtn")
         self.closeBtn.setFixedSize(40, 40)
         
-        # --- Sonsuz Nitro Butonu ---
+        # --- Infinite Nitro Button ---
         self.nitroBtn = QPushButton("INF NITRO", UltimateRacingDash)
         self.nitroBtn.setObjectName("nitroBtn")
         self.nitroBtn.setFixedSize(120, 35)
 
-        # Buton Stilleri (Premium Dashboard Görünümü)
-        self.updateStyles(False) # Başlangıçta nitro kapalı
+        # Button Styles (Premium Dashboard Look)
+        self.updateStyles(False) # Nitro off by default
 
         # UI Constants
         self.start_angle = 225
@@ -68,10 +68,10 @@ class Ui_UltimateRacingDash(object):
         """)
 
     def repositionWidgets(self, w, h, scale):
-        # Butonları dinamik olarak konumlandır (Tam ekran uyumlu)
+        # Dynamically reposition buttons (Fullscreen compatible)
         self.closeBtn.move(w - 50, 10)
         
-        # Nitro butonunu vites kutusunun hemen üzerine koy
+        # Place nitro button above the gear box
         center_x = w / 2
         center_y = h / 2
         self.nitroBtn.move(int(center_x - (60)), int(center_y - 125 * scale))
@@ -155,7 +155,7 @@ class Ui_UltimateRacingDash(object):
         text_rect = QRectF(gear_rect.left(), gear_rect.top() + (20 * scale), gw, gh - (20 * scale))
         painter.drawText(text_rect, Qt.AlignCenter, str(gear))
 
-        # --- Nitro Bölümü ---
+        # --- Nitro Section ---
         nos_y = gear_rect.bottom() + (10 * scale)
         painter.setFont(QFont("Segoe UI", int(10 * scale), QFont.Bold))
         painter.setPen(QColor(150, 160, 170))
