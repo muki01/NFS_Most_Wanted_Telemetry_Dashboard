@@ -94,12 +94,11 @@ def main():
                     # Cheat Operations
                     if nos_percentage <= 5.0 or keyboard.is_pressed('0'):
                         pm.write_float(final_nos_addr, 1.0)
-                if keyboard.is_pressed('0'):
-                     print("\n[!] NOS Refilled!          ")
-                    
-                    if keyboard.is_pressed('e'):
+                        print("\n[!] NOS Refilled!          ")
+
+                    if keyboard.is_pressed('e') and final_rpm_addr:
                         pm.write_float(final_rpm_addr, 100000.0)
-                        print("\n[!] RPM 5000!          ")
+                        print("\n[!] RPM BOOSTED!          ")
 
                 except Exception:
                     pass
